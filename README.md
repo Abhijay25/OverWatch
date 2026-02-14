@@ -38,24 +38,63 @@ C++ Scanner → CSV → Python Bot → GitHub Issues
 - GitHub account (for API access)
 
 ### Setup
+
+#### Option 1: NixOS / Nix Package Manager (Recommended)
 ```bash
 # 1. Clone repository
 git clone https://github.com/yourusername/OverWatch.git
 cd OverWatch
 
-# 2. Create .env file (NEVER COMMIT THIS)
+# 2. Enter development shell (installs all dependencies)
+nix-shell
+
+# 3. Create .env file (NEVER COMMIT THIS)
 cp .env.example .env
 # Edit .env and add your GitHub token
 
-# 3. Build C++ scanner
+# 4. Build C++ scanner
 cd scanner
-cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
+cmake -B build -S .
 cmake --build build
 cd ..
 
-# 4. Setup Python bot
+# 5. Setup Python bot
 cd bot
 python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cd ..
+```
+
+#### Option 2: Traditional Linux/macOS
+```bash
+# 1. Clone repository
+git clone https://github.com/yourusername/OverWatch.git
+cd OverWatch
+
+# 2. Install dependencies
+# Ubuntu/Debian:
+sudo apt install cmake build-essential libcpr-dev nlohmann-json3-dev libyaml-cpp-dev libspdlog-dev python3 python3-venv
+
+# Fedora:
+sudo dnf install cmake gcc-c++ cpr-devel json-devel yaml-cpp-devel spdlog-devel python3
+
+# macOS (with Homebrew):
+brew install cmake cpr nlohmann-json yaml-cpp spdlog python3
+
+# 3. Create .env file (NEVER COMMIT THIS)
+cp .env.example .env
+# Edit .env and add your GitHub token
+
+# 4. Build C++ scanner
+cd scanner
+cmake -B build -S .
+cmake --build build
+cd ..
+
+# 5. Setup Python bot
+cd bot
+python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 cd ..
@@ -63,23 +102,32 @@ cd ..
 
 ### Usage
 
-**1. Configure targets:**
-Edit `config/keywords.yaml` to specify search keywords.
+**See [USAGE.md](USAGE.md) for detailed instructions.**
+
+Quick workflow:
+
+**1. Configure (optional):**
+Edit `config/keywords.yaml` and `config/patterns.yaml` to customize search.
 
 **2. Run scanner:**
 ```bash
-./scanner/build/scanner --max-repos 10
+cd scanner
+nix-shell ../shell.nix --run "./build/scanner --max-repos 10"
+# Or without nix-shell if dependencies installed system-wide:
+./build/scanner --max-repos 10
 ```
 
 **3. Review findings:**
 ```bash
-cat data/findings.csv
+cat ../data/findings.csv
 ```
 
 **4. Run bot (dry-run first):**
 ```bash
-python bot/bot.py --input data/findings.csv --dry-run
-python bot/bot.py --input data/findings.csv
+cd ../bot
+source venv/bin/activate
+python bot.py --input ../data/findings.csv --dry-run
+python bot.py --input ../data/findings.csv
 ```
 
 ## Configuration
