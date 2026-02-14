@@ -14,6 +14,7 @@ result-*
 # Build artifacts
 scanner/build/
 scanner/cmake-build*/
+scanner/compile_commands.json  # Symlink to build/compile_commands.json
 *.o
 *.exe
 

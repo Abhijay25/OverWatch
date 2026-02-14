@@ -5,6 +5,9 @@ project(OverWatch-Scanner VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Generate compile_commands.json for IDEs
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Find packages (Nix/vcpkg will provide these)
 find_package(cpr CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
