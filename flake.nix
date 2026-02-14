@@ -1,5 +1,5 @@
 {
-  description = "OverWatch - Secret Detection & Notification System";
+  description = "OverWatch";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -33,27 +33,6 @@
             # Utilities
             git
           ];
-
-          shellHook = ''
-            echo "╔═══════════════════════════════════════╗"
-            echo "║   OverWatch Development Environment   ║"
-            echo "╚═══════════════════════════════════════╝"
-            echo ""
-            echo "Available tools:"
-            echo "  • CMake:  $(cmake --version | head -n1)"
-            echo "  • GCC:    $(gcc --version | head -n1)"
-            echo "  • Python: $(python --version)"
-            echo ""
-            echo "C++ libraries installed:"
-            echo "  ✓ libcpr"
-            echo "  ✓ nlohmann_json"
-            echo "  ✓ yaml-cpp"
-            echo "  ✓ spdlog"
-            echo ""
-            echo "Quick start:"
-            echo "  cd scanner && cmake -B build && cmake --build build"
-            echo ""
-          '';
         };
       }
     );

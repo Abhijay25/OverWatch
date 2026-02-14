@@ -14,8 +14,11 @@ find_package(spdlog CONFIG REQUIRED)
 # Source files
 add_executable(scanner
     src/main.cpp
-    # Add more .cpp files here as we create them
+    src/github_client.cpp
 )
+
+# Tell compiler where to find our header files
+target_include_directories(scanner PRIVATE include)
 
 # Link libraries
 target_link_libraries(scanner PRIVATE

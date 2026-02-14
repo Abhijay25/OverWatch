@@ -1,45 +1,34 @@
 #include <iostream>
 #include <cstdlib>
-#include <cpr/cpr.h>
-#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
+#include "github_client.h"
 
 int main() {
-    // Get GitHub token from environment variable
+    spdlog::set_level(spdlog::level::info);
+
+    spdlog::info("OverWatch Scanner v0.1.0");
+
+    // Get GitHub token from environment
     const char* token_env = std::getenv("GITHUB_TOKEN");
     std::string token = token_env ? token_env : "";
 
-    if (token.empty()) {
-        spdlog::warn("No GITHUB_TOKEN set - using unauthenticated API");
-    } else {
-        spdlog::info("Token loaded: {}...", token.substr(0, 8));
-    }
+    // Create GitHub client
+    overwatch::GitHubClient client(token);
 
-    // Make HTTP GET request to GitHub API
-    spdlog::info("Requesting rate limit from GitHub API...");
+    try {
+        // Get rate limit
+        auto rate_data = client.getRateLimit();
 
-    cpr::Response r = cpr::Get(
-        cpr::Url{"https://api.github.com/rate_limit"},
-        cpr::Header{
-            {"User-Agent", "OverWatch-Scanner"},
-            {"Authorization", "Bearer " + token}
-        }
-    );
+        // Extract values
+        int limit = rate_data["rate"]["limit"];
+        int remaining = rate_data["rate"]["remaining"];
 
-    // Check if request succeeded
-    if (r.status_code != 200) {
-        spdlog::error("Request failed with status: {}", r.status_code);
+        spdlog::info("Rate limit: {}/{} requests remaining", remaining, limit);
+
+    } catch (const std::exception& e) {
+        spdlog::error("Error: {}", e.what());
         return 1;
     }
-
-    // Parse JSON response
-    nlohmann::json data = nlohmann::json::parse(r.text);
-
-    // Extract rate limit info
-    int limit = data["rate"]["limit"];
-    int remaining = data["rate"]["remaining"];
-
-    spdlog::info("Rate limit: {}/{} requests remaining", remaining, limit);
 
     return 0;
 }
