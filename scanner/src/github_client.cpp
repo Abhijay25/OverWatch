@@ -100,7 +100,6 @@ std::vector<Repository> GitHubClient::searchRepositories(const std::string& quer
             Repository repo;
             repo.owner = item["owner"]["login"];
             repo.name = item["name"];
-            repo.full_name = item["full_name"];
             repo.url = item["html_url"];
             repo.stars = item["stargazers_count"];
             repo.language = item["language"].is_null() ? "" : item["language"];

@@ -12,7 +12,6 @@ namespace overwatch {
 struct Repository {
     std::string owner;       // Repository owner username
     std::string name;        // Repository name
-    std::string full_name;   // "owner/name"
     std::string url;         // GitHub URL
     int stars;               // Star count
     std::string language;    // Primary language
