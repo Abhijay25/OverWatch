@@ -27,7 +27,8 @@ bot/.env
 .pytest_cache/
 
 # IDE
-.vscode/
+.vscode/*
+!.vscode/c_cpp_properties.json  # Keep this one for C++ IntelliSense
 .idea/
 *.swp
 *.swo
