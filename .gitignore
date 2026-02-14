@@ -3,6 +3,14 @@
 data/
 *.csv
 
+# Nix
+.direnv/
+result
+result-*
+
+# direnv
+.envrc.cache
+
 # Build artifacts
 scanner/build/
 scanner/cmake-build*/
