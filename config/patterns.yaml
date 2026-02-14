@@ -1,0 +1,32 @@
+patterns:
+  - name: "GitHub Token"
+    regex: "ghp_[a-zA-Z0-9]{36}"
+    files: ["*"]
+
+  - name: "AWS Access Key"
+    regex: "AKIA[0-9A-Z]{16}"
+    files: ["*"]
+
+  - name: "Generic API Key"
+    regex: "(api[_-]?key|apikey)\\s*[:=]\\s*['\"][a-zA-Z0-9]{20,}['\"]"
+    files: ["*.env", "*.json", "*.yaml", "*.yml", "*.config"]
+
+  - name: "Private Key"
+    regex: "-----BEGIN (RSA |EC )?PRIVATE KEY-----"
+    files: ["*"]
+
+  - name: "Firebase Config"
+    regex: "\"api_key\":\\s*\"[A-Za-z0-9_-]{39}\""
+    files: ["google-services.json", "GoogleService-Info.plist"]
+
+  - name: "Slack Token"
+    regex: "xox[baprs]-[0-9a-zA-Z]{10,48}"
+    files: ["*"]
+
+  - name: "Discord Token"
+    regex: "[MN][A-Za-z\\d]{23}\\.[\\w-]{6}\\.[\\w-]{27}"
+    files: ["*"]
+
+  - name: "Telegram Bot Token"
+    regex: "[0-9]{8,10}:[A-Za-z0-9_-]{35}"
+    files: ["*"]

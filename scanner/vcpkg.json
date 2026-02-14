@@ -1,0 +1,10 @@
+{
+  "name": "overwatch-scanner",
+  "version": "0.1.0",
+  "dependencies": [
+    "cpr",
+    "nlohmann-json",
+    "yaml-cpp",
+    "spdlog"
+  ]
+}
