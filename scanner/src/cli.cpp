@@ -118,7 +118,7 @@ int CLI::addCommand() {
     }
 
     QueryBank bank;
-    bank.load("../data/query_bank.yaml");
+    bank.load("data/query_bank.yaml");
 
     Query query;
     query.id = bank.getNextId();
@@ -132,7 +132,7 @@ int CLI::addCommand() {
     }
 
     bank.addQuery(query);
-    bank.save("../data/query_bank.yaml");
+    bank.save("data/query_bank.yaml");
 
     spdlog::info("Added query '{}' with ID {}", query.name, query.id);
     return 0;
@@ -148,10 +148,10 @@ int CLI::deleteCommand() {
     int id = std::stoi(positional_args_[0]);
 
     QueryBank bank;
-    bank.load("../data/query_bank.yaml");
+    bank.load("data/query_bank.yaml");
 
     if (bank.deleteQuery(id)) {
-        bank.save("../data/query_bank.yaml");
+        bank.save("data/query_bank.yaml");
         spdlog::info("Query deleted successfully");
         return 0;
     } else {
@@ -162,7 +162,7 @@ int CLI::deleteCommand() {
 
 int CLI::allCommand() {
     QueryBank bank;
-    bank.load("../data/query_bank.yaml");
+    bank.load("data/query_bank.yaml");
 
     auto queries = bank.getAllQueries();
 
@@ -183,7 +183,7 @@ int CLI::allCommand() {
 
 int CLI::randomCommand() {
     QueryBank bank;
-    bank.load("../data/query_bank.yaml");
+    bank.load("data/query_bank.yaml");
 
     try {
         Query query = bank.getRandomQuery();
@@ -206,7 +206,7 @@ int CLI::filterCommand() {
     std::string tag = options_["tag"];
 
     QueryBank bank;
-    bank.load("../data/query_bank.yaml");
+    bank.load("data/query_bank.yaml");
 
     auto queries = bank.filterByTag(tag);
 
@@ -227,7 +227,7 @@ int CLI::filterCommand() {
 
 int CLI::listCommand() {
     QueryBank bank;
-    bank.load("../data/query_bank.yaml");
+    bank.load("data/query_bank.yaml");
 
     auto queries = bank.getAllQueries();
 
@@ -292,8 +292,8 @@ void CLI::runScan(const Query& query) {
 
     // Create scanner components
     SecretDetector detector;
-    detector.loadPatterns("../config/patterns.yaml");
-    Scanner scanner(client, detector, "../data/findings.jsonl");
+    detector.loadPatterns("config/patterns.yaml");
+    Scanner scanner(client, detector, "data/findings.jsonl");
 
     // Run scan
     spdlog::info("Starting scan: {}", query.name.empty() ? query.query : query.name);

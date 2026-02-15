@@ -26,6 +26,10 @@ bot/.env
 *.egg-info/
 .pytest_cache/
 
+# Bot findings and backups
+bot/*.jsonl
+bot/*.jsonl.backup.*
+
 # IDE
 .vscode/*
 !.vscode/c_cpp_properties.json  # Keep this one for C++ IntelliSense

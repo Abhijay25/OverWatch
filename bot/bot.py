@@ -2,9 +2,18 @@
 
 import os
 import json
+import argparse
 from pathlib import Path
 from github import Github, GithubException
 from dotenv import load_dotenv
+
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Process OverWatch findings and create GitHub issues')
+parser.add_argument('--dry-run', action='store_true',
+                    help='Show what would happen without creating issues')
+parser.add_argument('--input', type=str,
+                    help='Path to findings JSONL file (default: test_findings.jsonl)')
+args = parser.parse_args()
 
 # Load .env file from parent directory
 env_path = Path(__file__).parent.parent / '.env'
@@ -25,6 +34,8 @@ github = Github(github_token)
 try:
     user = github.get_user()
     print(f"✓ Connected to GitHub as: {user.login}")
+    if args.dry_run:
+        print(f"✓ DRY-RUN MODE: No issues will be created")
 except GithubException as e:
     print(f"✗ Authentication failed: {e.data.get('message', 'Unknown error')}")
     print(f"  Status code: {e.status}")
@@ -35,7 +46,10 @@ except Exception as e:
     exit(1)
 
 # Read findings from JSONL file
-findings_file = Path(__file__).parent / "test_findings.jsonl"
+if args.input:
+    findings_file = Path(args.input)
+else:
+    findings_file = Path(__file__).parent / "test_findings.jsonl"
 
 if not findings_file.exists():
     print(f"✗ Findings file not found: {findings_file}")
@@ -130,13 +144,19 @@ An automated security scan detected what appears to be an exposed credential in 
 
     # Create the issue
     try:
-        issue = repo.create_issue(
-            title=title,
-            body=body,
-            labels=['security']
-        )
-        print(f"  ✓ Created issue #{issue.number}: {issue.html_url}")
-        success_count += 1
+        if args.dry_run:
+            print(f"  ✓ [DRY-RUN] Would create issue: {title}")
+            print(f"     Repository: {finding['owner']}/{finding['repo']}")
+            print(f"     File: {finding['file']} (line {finding['line']})")
+            success_count += 1
+        else:
+            issue = repo.create_issue(
+                title=title,
+                body=body,
+                labels=['security']
+            )
+            print(f"  ✓ Created issue #{issue.number}: {issue.html_url}")
+            success_count += 1
         # Don't add to failed_findings - success!
     except GithubException as e:
         if e.status == 403:
@@ -158,22 +178,28 @@ An automated security scan detected what appears to be an exposed credential in 
 
 # Update the JSONL file (remove successful and skipped entries)
 if success_count > 0 or skipped_count > 0:
-    print(f"\n📝 Updating findings file...")
+    if args.dry_run:
+        print(f"\n📝 [DRY-RUN] Would update findings file...")
+        removed_count = success_count + skipped_count
+        print(f"  ✓ Would remove {removed_count} processed entries")
+        print(f"  ✓ Would keep {failed_count} failed entries for retry")
+    else:
+        print(f"\n📝 Updating findings file...")
 
-    # Create backup first
-    from datetime import datetime
-    backup_file = findings_file.with_suffix(f'.jsonl.backup.{datetime.now().strftime("%Y%m%d_%H%M%S")}')
-    backup_file.write_text(findings_file.read_text())
-    print(f"  ✓ Created backup: {backup_file.name}")
+        # Create backup first
+        from datetime import datetime
+        backup_file = findings_file.with_suffix(f'.jsonl.backup.{datetime.now().strftime("%Y%m%d_%H%M%S")}')
+        backup_file.write_text(findings_file.read_text())
+        print(f"  ✓ Created backup: {backup_file.name}")
 
-    # Write only failed findings back to file
-    with open(findings_file, 'w') as f:
-        for finding in failed_findings:
-            f.write(json.dumps(finding) + '\n')
+        # Write only failed findings back to file
+        with open(findings_file, 'w') as f:
+            for finding in failed_findings:
+                f.write(json.dumps(finding) + '\n')
 
-    removed_count = success_count + skipped_count
-    print(f"  ✓ Removed {removed_count} processed entries")
-    print(f"  ✓ Kept {failed_count} failed entries for retry")
+        removed_count = success_count + skipped_count
+        print(f"  ✓ Removed {removed_count} processed entries")
+        print(f"  ✓ Kept {failed_count} failed entries for retry")
 
 # Print summary
 print("\n" + "=" * 60)
