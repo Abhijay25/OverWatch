@@ -15,19 +15,21 @@ find_package(yaml-cpp CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
 # Source files
-add_executable(scanner
+add_executable(overwatch
     src/main.cpp
     src/github_client.cpp
     src/secret_detector.cpp
     src/scanner.cpp
+    src/query_bank.cpp
+    src/cli.cpp
     src/base64.cpp
 )
 
 # Tell compiler where to find our header files
-target_include_directories(scanner PRIVATE include)
+target_include_directories(overwatch PRIVATE include)
 
 # Link libraries
-target_link_libraries(scanner PRIVATE
+target_link_libraries(overwatch PRIVATE
     cpr::cpr
     nlohmann_json::nlohmann_json
     yaml-cpp::yaml-cpp
@@ -36,7 +38,10 @@ target_link_libraries(scanner PRIVATE
 
 # Enable warnings
 if(MSVC)
-    target_compile_options(scanner PRIVATE /W4)
+    target_compile_options(overwatch PRIVATE /W4)
 else()
-    target_compile_options(scanner PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(overwatch PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+
+# Install target - installs to ~/.local/bin by default
+install(TARGETS overwatch DESTINATION bin)
