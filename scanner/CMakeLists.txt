@@ -18,6 +18,9 @@ find_package(spdlog CONFIG REQUIRED)
 add_executable(scanner
     src/main.cpp
     src/github_client.cpp
+    src/secret_detector.cpp
+    src/scanner.cpp
+    src/base64.cpp
 )
 
 # Tell compiler where to find our header files

@@ -10,11 +10,11 @@ namespace overwatch {
  * Represents a GitHub repository
  */
 struct Repository {
-    std::string owner;       // Repository owner username
-    std::string name;        // Repository name
-    std::string url;         // GitHub URL
-    int stars;               // Star count
-    std::string language;    // Primary language
+    std::string owner;
+    std::string name;
+    std::string url;
+    int stars;
+    std::string language;
 };
 
 /**
@@ -27,6 +27,12 @@ public:
      * @param token GitHub API token (empty string for unauthenticated)
      */
     explicit GitHubClient(const std::string& token);
+
+    /**
+     * Validate that the token is working
+     * @return true if token is valid, false otherwise
+     */
+    bool validateToken();
 
     /**
      * Get current rate limit status
@@ -42,9 +48,18 @@ public:
      */
     std::vector<Repository> searchRepositories(const std::string& query, int max_results = 30);
 
+    /**
+     * Get file contents from a repository
+     * @param owner Repository owner
+     * @param repo Repository name
+     * @param path File path within repository
+     * @return Decoded file contents as string
+     */
+    std::string getFileContent(const std::string& owner, const std::string& repo, const std::string& path);
+
 private:
-    std::string token_;      // Member variable: stores the token
-    std::string base_url_;   // Member variable: GitHub API base URL
+    std::string token_;
+    std::string base_url_;
 };
 
 } // namespace overwatch

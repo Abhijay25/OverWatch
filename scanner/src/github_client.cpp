@@ -1,37 +1,14 @@
 #include "github_client.h"
+#include "base64.h"
 #include <cpr/cpr.h>
 #include <spdlog/spdlog.h>
-#include <sstream>
-#include <iomanip>
 
 namespace overwatch {
 
-// Helper function to URL-encode a string
-std::string url_encode(const std::string& value) {
-    std::ostringstream escaped;
-    escaped.fill('0');
-    escaped << std::hex;
-
-    for (char c : value) {
-        // Keep alphanumeric and safe characters
-        if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
-            escaped << c;
-        } else {
-            // Percent-encode everything else
-            escaped << std::uppercase;
-            escaped << '%' << std::setw(2) << int((unsigned char)c);
-            escaped << std::nouppercase;
-        }
-    }
-
-    return escaped.str();
-}
-
-// Constructor implementation
+// Constructor 
 GitHubClient::GitHubClient(const std::string& token)
     : token_(token), base_url_("https://api.github.com")
 {
-    // Constructor body (can be empty if initialization list does everything)
     if (token_.empty()) {
         spdlog::warn("GitHubClient created without token - using unauthenticated API");
     } else {
@@ -39,7 +16,46 @@ GitHubClient::GitHubClient(const std::string& token)
     }
 }
 
-// getRateLimit implementation
+// Validate Github Token
+bool GitHubClient::validateToken() {
+    if (token_.empty()) {
+        return true;  // No token is okay (uses unauthenticated API)
+    }
+
+    spdlog::debug("Validating GitHub token");
+
+    // Build headers
+    cpr::Header headers = {{"User-Agent", "OverWatch-Scanner"}};
+    headers["Authorization"] = "Bearer " + token_;
+
+    // Try to access user endpoint (requires authentication)
+    cpr::Response r = cpr::Get(
+        cpr::Url{base_url_ + "/user"},
+        headers
+    );
+
+    if (r.status_code == 401) {
+        spdlog::error("GitHub token is invalid or expired!");
+        spdlog::error("Please check your token at: https://github.com/settings/tokens");
+        return false;
+    }
+
+    if (r.status_code == 403) {
+        spdlog::error("GitHub token lacks required permissions!");
+        spdlog::error("Token needs 'public_repo' scope");
+        return false;
+    }
+
+    if (r.status_code != 200) {
+        spdlog::warn("Could not validate token: HTTP {}", r.status_code);
+        return false;
+    }
+
+    spdlog::debug("Token is valid");
+    return true;
+}
+
+// getRateLimit
 nlohmann::json GitHubClient::getRateLimit() {
     spdlog::info("Fetching rate limit from GitHub API");
 
@@ -65,11 +81,11 @@ nlohmann::json GitHubClient::getRateLimit() {
     return nlohmann::json::parse(r.text);
 }
 
-// searchRepositories implementation
+// Search Repos with Given Filters
 std::vector<Repository> GitHubClient::searchRepositories(const std::string& query, int max_results) {
     spdlog::info("Searching repositories with query: {}", query);
 
-    std::vector<Repository> repositories;  // Create empty vector
+    std::vector<Repository> repositories;
 
     // Build headers
     cpr::Header headers = {{"User-Agent", "OverWatch-Scanner"}};
@@ -77,24 +93,23 @@ std::vector<Repository> GitHubClient::searchRepositories(const std::string& quer
         headers["Authorization"] = "Bearer " + token_;
     }
 
-    // Build API URL with query parameters (encode the query!)
-    std::string encoded_query = url_encode(query);
-    std::string url = base_url_ + "/search/repositories?q=" + encoded_query +
-                     "&per_page=" + std::to_string(max_results);
-
-    // Make request
-    cpr::Response r = cpr::Get(cpr::Url{url}, headers);
+    // Make request with CPR's automatic URL encoding
+    cpr::Response r = cpr::Get(
+        cpr::Url{base_url_ + "/search/repositories"},
+        cpr::Parameters{{"q", query}, {"per_page", std::to_string(max_results)}},
+        headers
+    );
 
     // Check status
     if (r.status_code != 200) {
         spdlog::error("Search failed with status {}", r.status_code);
-        return repositories;  // Return empty vector
+        return repositories;
     }
 
     // Parse JSON response
     nlohmann::json response = nlohmann::json::parse(r.text);
 
-    // Extract repositories from "items" array
+    // Extract repositories from array
     if (response.contains("items")) {
         for (const auto& item : response["items"]) {
             Repository repo;
@@ -104,7 +119,7 @@ std::vector<Repository> GitHubClient::searchRepositories(const std::string& quer
             repo.stars = item["stargazers_count"];
             repo.language = item["language"].is_null() ? "" : item["language"];
 
-            repositories.push_back(repo);  // Add to vector
+            repositories.push_back(repo);
         }
     }
 
@@ -112,4 +127,42 @@ std::vector<Repository> GitHubClient::searchRepositories(const std::string& quer
     return repositories;
 }
 
-} // namespace overwatch
+// Get File Contents from Repo
+std::string GitHubClient::getFileContent(const std::string& owner, const std::string& repo, const std::string& path) {
+    spdlog::debug("Fetching file: {}/{}/{}", owner, repo, path);
+
+    // Build headers
+    cpr::Header headers = {{"User-Agent", "OverWatch-Scanner"}};
+    if (!token_.empty()) {
+        headers["Authorization"] = "Bearer " + token_;
+    }
+
+    std::string url = base_url_ + "/repos/" + owner + "/" + repo + "/contents/" + path;
+    cpr::Response r = cpr::Get(cpr::Url{url}, headers);
+
+    // Check status
+    if (r.status_code != 200) {
+        if (r.status_code == 404) {
+            spdlog::debug("File not found: {}", path);
+        } else {
+            spdlog::warn("Failed to fetch file: HTTP {}", r.status_code);
+        }
+        throw std::runtime_error("Failed to fetch file: " + path);
+    }
+
+    // Parse JSON response
+    nlohmann::json response = nlohmann::json::parse(r.text);
+
+    // Extract and decode base64 content
+    if (!response.contains("content")) {
+        throw std::runtime_error("No content field in API response");
+    }
+
+    std::string base64_content = response["content"];
+    std::string decoded = base64_decode(base64_content, true);  // true = remove linebreaks
+
+    spdlog::debug("Successfully fetched {} bytes", decoded.size());
+    return decoded;
+}
+
+} 
