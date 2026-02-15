@@ -130,20 +130,34 @@ sudo pacman -S cmake gcc cpr nlohmann-json yaml-cpp spdlog python python-pip
 
 ### Basic Usage
 
+**Automated Mode (Recommended)** - Scanner and bot run together:
+
 ```bash
-# Run the scanner
-overwatch run "language:Python stars:<10 created:>2026-02-10"
+# Load environment
+export $(cat .env | grep -v '^#' | xargs)
 
-# Check findings
-cat data/findings.jsonl
-
-# Run the bot (test mode first!)
-cd bot
-source venv/bin/activate
-python bot.py --dry-run
+# Run everything together (dry-run first!)
+./run.py "language:Python stars:<10 created:>2026-02-15" --max-repos 5 --dry-run
 
 # Run for real
-python bot.py
+./run.py "language:Python bot stars:<20" --max-repos 10
+```
+
+**Manual Mode** - Run scanner and bot separately:
+
+```bash
+# 1. Run scanner
+./build/scanner/overwatch run "language:Python stars:<10" --max-repos 5
+
+# 2. Check findings
+cat data/findings.jsonl
+
+# 3. Run bot (dry-run first!)
+cd bot && source venv/bin/activate
+python bot.py --dry-run --input ../data/findings.jsonl
+
+# 4. Run for real
+python bot.py --input ../data/findings.jsonl
 ```
 
 ---
