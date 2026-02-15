@@ -1,0 +1,241 @@
+#!/usr/bin/env python3
+"""
+OverWatch - Main Command
+Unified interface that runs scanner and bot together
+"""
+
+import os
+import sys
+import subprocess
+import signal
+import time
+import argparse
+from pathlib import Path
+
+
+class OverWatch:
+    def __init__(self, with_bot=True, dry_run=False):
+        self.with_bot = with_bot
+        self.dry_run = dry_run
+        self.running = True
+        self.root = Path(__file__).parent.resolve()
+
+        # Paths
+        self.scanner = self.root / 'build' / 'scanner' / 'overwatch'
+        self.bot_dir = self.root / 'bot'
+        self.bot_venv = self.bot_dir / 'venv' / 'bin' / 'python'
+        self.findings = self.root / 'data' / 'findings.jsonl'
+
+        # Handle Ctrl+C
+        signal.signal(signal.SIGINT, self.handle_interrupt)
+        signal.signal(signal.SIGTERM, self.handle_interrupt)
+
+        self.scanner_proc = None
+        self.last_line_count = 0
+
+    def handle_interrupt(self, sig, frame):
+        """Handle Ctrl+C gracefully"""
+        print("\n\n🛑 Interrupted - stopping...")
+        self.running = False
+        if self.scanner_proc and self.scanner_proc.poll() is None:
+            self.scanner_proc.terminate()
+            self.scanner_proc.wait(timeout=3)
+        sys.exit(0)
+
+    def run_scanner_with_bot(self, scanner_args):
+        """Run scanner with bot monitoring in parallel"""
+        print("🚀 Starting OverWatch")
+        if self.dry_run:
+            print("   Mode: DRY-RUN (no issues will be created)")
+        print()
+
+        # Clear findings
+        if self.findings.exists():
+            self.findings.unlink()
+
+        # Build scanner command
+        scanner_cmd = [str(self.scanner)] + scanner_args
+
+        # Start scanner
+        print("🔍 Starting scanner...")
+        self.scanner_proc = subprocess.Popen(
+            scanner_cmd,
+            cwd=str(self.root),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True
+        )
+        print(f"   ✓ Scanner running (PID {self.scanner_proc.pid})")
+
+        if self.with_bot:
+            print("🤖 Bot monitoring for findings...\n")
+            time.sleep(1)  # Give scanner a moment to start
+
+            # Bot monitoring loop
+            while self.running:
+                scanner_running = self.scanner_proc.poll() is None
+
+                # Check for new findings
+                if self.findings.exists():
+                    with open(self.findings, 'r') as f:
+                        lines = [l for l in f if l.strip()]
+                        current_count = len(lines)
+
+                    # Process new findings
+                    if current_count > self.last_line_count:
+                        new_count = current_count - self.last_line_count
+                        print(f"📝 Found {new_count} new finding(s), processing...")
+
+                        # Run bot
+                        bot_cmd = [str(self.bot_venv), 'bot.py', '--input', str(self.findings)]
+                        if self.dry_run:
+                            bot_cmd.append('--dry-run')
+
+                        subprocess.run(bot_cmd, cwd=str(self.bot_dir))
+
+                        # Update count
+                        if self.findings.exists():
+                            with open(self.findings, 'r') as f:
+                                self.last_line_count = len([l for l in f if l.strip()])
+                        else:
+                            self.last_line_count = 0
+                        print()
+
+                # Check if scanner finished
+                if not scanner_running:
+                    # Final processing
+                    if self.findings.exists():
+                        with open(self.findings, 'r') as f:
+                            remaining = len([l for l in f if l.strip()])
+                        if remaining > 0:
+                            print(f"📝 Processing {remaining} final finding(s)...")
+                            bot_cmd = [str(self.bot_venv), 'bot.py', '--input', str(self.findings)]
+                            if self.dry_run:
+                                bot_cmd.append('--dry-run')
+                            subprocess.run(bot_cmd, cwd=str(self.bot_dir))
+
+                    print("\n✅ Scanner completed")
+                    break
+
+                time.sleep(2)
+        else:
+            # Just wait for scanner
+            print("\n⏳ Waiting for scanner to complete...\n")
+            self.scanner_proc.wait()
+            print("✅ Scanner completed")
+
+        print("\n" + "=" * 60)
+        print("✅ OverWatch completed")
+        print("=" * 60)
+
+    def run_scanner_only(self, scanner_args):
+        """Run scanner without bot (for commands like list, add, delete)"""
+        scanner_cmd = [str(self.scanner)] + scanner_args
+        result = subprocess.run(scanner_cmd, cwd=str(self.root))
+        sys.exit(result.returncode)
+
+
+def main():
+    # Check if scanner exists
+    root = Path(__file__).parent.resolve()
+    scanner_binary = root / 'build' / 'scanner' / 'overwatch'
+
+    if not scanner_binary.exists():
+        print("❌ Scanner not built")
+        print("   Run: cmake -B build -S . && cmake --build build")
+        sys.exit(1)
+
+    # Parse arguments
+    parser = argparse.ArgumentParser(
+        description='OverWatch - GitHub Secret Scanner',
+        add_help=False  # We'll handle help ourselves
+    )
+    parser.add_argument('--dry-run', action='store_true',
+                        help='Bot dry-run mode (no issues created)')
+    parser.add_argument('--no-bot', action='store_true',
+                        help='Run scanner only, skip bot')
+    parser.add_argument('--help', '-h', action='store_true',
+                        help='Show this help')
+
+    # Parse known args, rest go to scanner
+    args, scanner_args = parser.parse_known_args()
+
+    # Show help
+    if args.help or len(sys.argv) == 1:
+        print("""OverWatch - Automated GitHub Secret Scanner
+
+USAGE:
+  overwatch <command> [options]
+
+COMMANDS:
+  run <query>              Run scanner and bot on a query
+  add                      Add query to bank (scanner only)
+  delete <id>              Delete query from bank (scanner only)
+  list                     List all queries (scanner only)
+  all                      Run all queries from bank
+  random                   Run a random query
+  filter --tag <tag>       Run queries with specific tag
+  help                     Show scanner help
+
+OPTIONS:
+  --dry-run                Bot won't create issues (test mode)
+  --no-bot                 Run scanner only, skip bot
+  --max-repos N            Maximum repositories to scan
+
+EXAMPLES:
+  # Run with bot (default)
+  overwatch run "language:Python stars:<10"
+
+  # Dry-run mode (safe testing)
+  overwatch run "language:Python bot stars:<20" --dry-run
+
+  # Limit repos
+  overwatch run "language:JavaScript stars:<5" --max-repos 10
+
+  # Run without bot
+  overwatch run "language:Go stars:<10" --no-bot
+
+  # Management commands (no bot)
+  overwatch list
+  overwatch add --name "Query" --query "..." --tag python
+  overwatch all
+  overwatch random
+
+NOTES:
+  - Bot automatically processes findings as scanner discovers them
+  - Press Ctrl+C to stop at any time
+  - Set GITHUB_TOKEN in .env file before running
+""")
+        sys.exit(0)
+
+    # Determine which commands need bot
+    bot_commands = ['run', 'all', 'random', 'filter']
+    no_bot_commands = ['list', 'add', 'delete', 'help']
+
+    command = scanner_args[0] if scanner_args else None
+    with_bot = (command in bot_commands) and not args.no_bot
+
+    # Check for bot requirements if needed
+    if with_bot:
+        bot_venv = root / 'bot' / 'venv'
+        if not bot_venv.exists():
+            print("❌ Bot venv not set up")
+            print("   Run: cd bot && python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt")
+            sys.exit(1)
+
+        if not os.getenv('GITHUB_TOKEN'):
+            print("❌ GITHUB_TOKEN not set")
+            print("   Run: export $(cat .env | grep -v '^#' | xargs)")
+            sys.exit(1)
+
+    # Run
+    ow = OverWatch(with_bot=with_bot, dry_run=args.dry_run)
+
+    if with_bot:
+        ow.run_scanner_with_bot(scanner_args)
+    else:
+        ow.run_scanner_only(scanner_args)
+
+
+if __name__ == '__main__':
+    main()

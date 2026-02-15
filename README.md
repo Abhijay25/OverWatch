@@ -130,35 +130,27 @@ sudo pacman -S cmake gcc cpr nlohmann-json yaml-cpp spdlog python python-pip
 
 ### Basic Usage
 
-**Automated Mode (Recommended)** - Scanner and bot run together:
-
 ```bash
 # Load environment
 export $(cat .env | grep -v '^#' | xargs)
 
-# Run everything together (dry-run first!)
-./run.py "language:Python stars:<10 created:>2026-02-15" --max-repos 5 --dry-run
+# Run scanner and bot together (dry-run first!)
+./overwatch run "language:Python stars:<10 created:>2026-02-15" --max-repos 5 --dry-run
 
 # Run for real
-./run.py "language:Python bot stars:<20" --max-repos 10
+./overwatch run "language:Python bot stars:<20" --max-repos 10
+
+# List saved queries
+./overwatch list
+
+# Run all saved queries
+./overwatch all --dry-run
+
+# Run scanner only (skip bot)
+./overwatch run "language:JavaScript stars:<5" --no-bot
 ```
 
-**Manual Mode** - Run scanner and bot separately:
-
-```bash
-# 1. Run scanner
-./build/scanner/overwatch run "language:Python stars:<10" --max-repos 5
-
-# 2. Check findings
-cat data/findings.jsonl
-
-# 3. Run bot (dry-run first!)
-cd bot && source venv/bin/activate
-python bot.py --dry-run --input ../data/findings.jsonl
-
-# 4. Run for real
-python bot.py --input ../data/findings.jsonl
-```
+**The `overwatch` command automatically runs both scanner and bot together.** Press Ctrl+C to stop anytime.
 
 ---
 
@@ -201,25 +193,27 @@ OverWatch/
 
 ## Quick Reference
 
-### Scanner Commands
-
 ```bash
-overwatch help                          # Show help
-overwatch list                          # List all queries
-overwatch run <query> [--max-repos N]   # Run single query
-overwatch all                           # Run all queries
+# Main commands (scanner + bot automatically)
+overwatch run <query> [--max-repos N]   # Run query with bot
+overwatch all                           # Run all saved queries
 overwatch random                        # Run random query
-overwatch filter --tag <tag>            # Run queries with tag
+overwatch filter --tag <tag>            # Run queries by tag
+
+# Management (scanner only, no bot)
+overwatch list                          # List all queries
 overwatch add [options]                 # Add query to bank
-overwatch delete <id>                   # Delete query from bank
-```
+overwatch delete <id>                   # Delete query
 
-### Bot Commands
+# Options
+--dry-run                               # Bot test mode (no issues created)
+--no-bot                                # Skip bot, run scanner only
+--max-repos N                           # Limit repositories scanned
 
-```bash
-python bot.py                           # Process findings
-python bot.py --dry-run                 # Test without creating issues
-python bot.py --input path/to/file.jsonl  # Custom input file
+# Examples
+overwatch run "language:Python stars:<10" --dry-run
+overwatch all --dry-run
+overwatch run "query" --no-bot          # Scanner only
 ```
 
 ---
