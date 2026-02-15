@@ -80,7 +80,8 @@ class OverWatch:
             cwd=str(self.root),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            text=True
+            text=True,
+            env=os.environ.copy()  # Pass environment variables to subprocess
         )
         print(f"   ✓ Scanner running (PID {self.scanner_proc.pid})")
 
