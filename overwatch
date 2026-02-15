@@ -13,6 +13,23 @@ import argparse
 from pathlib import Path
 
 
+def load_env_file(env_path):
+    """Load .env file into environment (simple dotenv replacement)"""
+    if not env_path.exists():
+        return
+
+    with open(env_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            # Skip empty lines and comments
+            if not line or line.startswith('#'):
+                continue
+            # Parse KEY=value
+            if '=' in line:
+                key, value = line.split('=', 1)
+                os.environ[key.strip()] = value.strip()
+
+
 class OverWatch:
     def __init__(self, with_bot=True, dry_run=False):
         self.with_bot = with_bot
@@ -136,8 +153,12 @@ class OverWatch:
 
 
 def main():
-    # Check if scanner exists
+    # Load .env file
     root = Path(__file__).parent.resolve()
+    env_path = root / '.env'
+    load_env_file(env_path)
+
+    # Check if scanner exists
     scanner_binary = root / 'build' / 'scanner' / 'overwatch'
 
     if not scanner_binary.exists():
@@ -204,7 +225,7 @@ EXAMPLES:
 NOTES:
   - Bot automatically processes findings as scanner discovers them
   - Press Ctrl+C to stop at any time
-  - Set GITHUB_TOKEN in .env file before running
+  - Reads GITHUB_TOKEN from .env file automatically
 """)
         sys.exit(0)
 
@@ -224,8 +245,8 @@ NOTES:
             sys.exit(1)
 
         if not os.getenv('GITHUB_TOKEN'):
-            print("❌ GITHUB_TOKEN not set")
-            print("   Run: export $(cat .env | grep -v '^#' | xargs)")
+            print("❌ GITHUB_TOKEN not found in .env file")
+            print("   Make sure .env exists and contains: GITHUB_TOKEN=ghp_...")
             sys.exit(1)
 
     # Run

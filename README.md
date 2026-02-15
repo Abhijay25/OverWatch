@@ -131,9 +131,6 @@ sudo pacman -S cmake gcc cpr nlohmann-json yaml-cpp spdlog python python-pip
 ### Basic Usage
 
 ```bash
-# Load environment
-export $(cat .env | grep -v '^#' | xargs)
-
 # Run scanner and bot together (dry-run first!)
 ./overwatch run "language:Python stars:<10 created:>2026-02-15" --max-repos 5 --dry-run
 
@@ -150,7 +147,10 @@ export $(cat .env | grep -v '^#' | xargs)
 ./overwatch run "language:JavaScript stars:<5" --no-bot
 ```
 
-**The `overwatch` command automatically runs both scanner and bot together.** Press Ctrl+C to stop anytime.
+**The `overwatch` command automatically:**
+- Loads `GITHUB_TOKEN` from `.env` file
+- Runs scanner and bot together
+- Can be stopped anytime with Ctrl+C
 
 ---
 
