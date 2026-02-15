@@ -1,0 +1,3 @@
+{"owner":"Abhijay25","repo":"OverWatch","file":".env","line":5,"secret_type":"GitHub Token","matched_text":"ghp_test123...","timestamp":"2026-02-15T20:00:00Z"}
+{"owner":"testuser","repo":"test-repo","file":"config.js","line":12,"secret_type":"API Key","matched_text":"sk_test_...","timestamp":"2026-02-15T20:01:00Z"}
+{"owner":"example","repo":"demo-app","file":"settings.py","line":8,"secret_type":"AWS Access Key","matched_text":"AKIA1234...","timestamp":"2026-02-15T20:02:00Z"}

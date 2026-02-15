@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/abhijay/repos/OverWatch/build/cmake_install.cmake",
+		"/home/abhijay/repos/OverWatch/build/scanner/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

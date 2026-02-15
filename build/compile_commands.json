@@ -1,0 +1,44 @@
+[
+{
+  "directory": "/home/abhijay/repos/OverWatch/build/scanner",
+  "command": "/nix/store/a245z3cvf9x9sn0xlk6k8j9xhxbhda1z-gcc-wrapper-15.2.0/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/abhijay/repos/OverWatch/scanner/include -std=gnu++17 -Wall -Wextra -Wpedantic -o CMakeFiles/overwatch.dir/src/main.cpp.o -c /home/abhijay/repos/OverWatch/scanner/src/main.cpp",
+  "file": "/home/abhijay/repos/OverWatch/scanner/src/main.cpp",
+  "output": "scanner/CMakeFiles/overwatch.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/abhijay/repos/OverWatch/build/scanner",
+  "command": "/nix/store/a245z3cvf9x9sn0xlk6k8j9xhxbhda1z-gcc-wrapper-15.2.0/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/abhijay/repos/OverWatch/scanner/include -std=gnu++17 -Wall -Wextra -Wpedantic -o CMakeFiles/overwatch.dir/src/github_client.cpp.o -c /home/abhijay/repos/OverWatch/scanner/src/github_client.cpp",
+  "file": "/home/abhijay/repos/OverWatch/scanner/src/github_client.cpp",
+  "output": "scanner/CMakeFiles/overwatch.dir/src/github_client.cpp.o"
+},
+{
+  "directory": "/home/abhijay/repos/OverWatch/build/scanner",
+  "command": "/nix/store/a245z3cvf9x9sn0xlk6k8j9xhxbhda1z-gcc-wrapper-15.2.0/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/abhijay/repos/OverWatch/scanner/include -std=gnu++17 -Wall -Wextra -Wpedantic -o CMakeFiles/overwatch.dir/src/secret_detector.cpp.o -c /home/abhijay/repos/OverWatch/scanner/src/secret_detector.cpp",
+  "file": "/home/abhijay/repos/OverWatch/scanner/src/secret_detector.cpp",
+  "output": "scanner/CMakeFiles/overwatch.dir/src/secret_detector.cpp.o"
+},
+{
+  "directory": "/home/abhijay/repos/OverWatch/build/scanner",
+  "command": "/nix/store/a245z3cvf9x9sn0xlk6k8j9xhxbhda1z-gcc-wrapper-15.2.0/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/abhijay/repos/OverWatch/scanner/include -std=gnu++17 -Wall -Wextra -Wpedantic -o CMakeFiles/overwatch.dir/src/scanner.cpp.o -c /home/abhijay/repos/OverWatch/scanner/src/scanner.cpp",
+  "file": "/home/abhijay/repos/OverWatch/scanner/src/scanner.cpp",
+  "output": "scanner/CMakeFiles/overwatch.dir/src/scanner.cpp.o"
+},
+{
+  "directory": "/home/abhijay/repos/OverWatch/build/scanner",
+  "command": "/nix/store/a245z3cvf9x9sn0xlk6k8j9xhxbhda1z-gcc-wrapper-15.2.0/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/abhijay/repos/OverWatch/scanner/include -std=gnu++17 -Wall -Wextra -Wpedantic -o CMakeFiles/overwatch.dir/src/query_bank.cpp.o -c /home/abhijay/repos/OverWatch/scanner/src/query_bank.cpp",
+  "file": "/home/abhijay/repos/OverWatch/scanner/src/query_bank.cpp",
+  "output": "scanner/CMakeFiles/overwatch.dir/src/query_bank.cpp.o"
+},
+{
+  "directory": "/home/abhijay/repos/OverWatch/build/scanner",
+  "command": "/nix/store/a245z3cvf9x9sn0xlk6k8j9xhxbhda1z-gcc-wrapper-15.2.0/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/abhijay/repos/OverWatch/scanner/include -std=gnu++17 -Wall -Wextra -Wpedantic -o CMakeFiles/overwatch.dir/src/cli.cpp.o -c /home/abhijay/repos/OverWatch/scanner/src/cli.cpp",
+  "file": "/home/abhijay/repos/OverWatch/scanner/src/cli.cpp",
+  "output": "scanner/CMakeFiles/overwatch.dir/src/cli.cpp.o"
+},
+{
+  "directory": "/home/abhijay/repos/OverWatch/build/scanner",
+  "command": "/nix/store/a245z3cvf9x9sn0xlk6k8j9xhxbhda1z-gcc-wrapper-15.2.0/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/abhijay/repos/OverWatch/scanner/include -std=gnu++17 -Wall -Wextra -Wpedantic -o CMakeFiles/overwatch.dir/src/base64.cpp.o -c /home/abhijay/repos/OverWatch/scanner/src/base64.cpp",
+  "file": "/home/abhijay/repos/OverWatch/scanner/src/base64.cpp",
+  "output": "scanner/CMakeFiles/overwatch.dir/src/base64.cpp.o"
+}
+]
