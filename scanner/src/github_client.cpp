@@ -93,7 +93,71 @@ std::vector<Repository> GitHubClient::searchRepositories(const std::string& quer
         headers["Authorization"] = "Bearer " + token_;
     }
 
-    // Make request with CPR's automatic URL encoding
+    // Handle unlimited mode (max_results = 0)
+    if (max_results == 0) {
+        spdlog::info("Unlimited mode - fetching all available repositories (up to 1000)");
+
+        int page = 1;
+        int per_page = 100;  // GitHub API max per page
+        int total_fetched = 0;
+
+        while (true) {
+            // Make paginated request
+            cpr::Response r = cpr::Get(
+                cpr::Url{base_url_ + "/search/repositories"},
+                cpr::Parameters{{"q", query}, {"per_page", std::to_string(per_page)}, {"page", std::to_string(page)}},
+                headers
+            );
+
+            // Check status
+            if (r.status_code != 200) {
+                spdlog::warn("Search failed with status {} on page {}", r.status_code, page);
+                break;
+            }
+
+            // Parse JSON response
+            nlohmann::json response = nlohmann::json::parse(r.text);
+
+            // Extract total count (for info)
+            if (page == 1 && response.contains("total_count")) {
+                int total = response["total_count"];
+                spdlog::info("Query matches {} total repositories", total);
+            }
+
+            // Extract repositories from array
+            if (response.contains("items") && !response["items"].empty()) {
+                for (const auto& item : response["items"]) {
+                    Repository repo;
+                    repo.owner = item["owner"]["login"];
+                    repo.name = item["name"];
+                    repo.url = item["html_url"];
+                    repo.stars = item["stargazers_count"];
+                    repo.language = item["language"].is_null() ? "" : item["language"];
+
+                    repositories.push_back(repo);
+                    total_fetched++;
+                }
+
+                spdlog::debug("Fetched page {} - {} repositories so far", page, total_fetched);
+
+                // GitHub limits to 1000 results max, stop if we hit it
+                if (total_fetched >= 1000) {
+                    spdlog::info("Reached GitHub's 1000 result limit");
+                    break;
+                }
+
+                page++;
+            } else {
+                // No more results
+                break;
+            }
+        }
+
+        spdlog::info("Found {} repositories total", repositories.size());
+        return repositories;
+    }
+
+    // Limited mode - single page fetch
     cpr::Response r = cpr::Get(
         cpr::Url{base_url_ + "/search/repositories"},
         cpr::Parameters{{"q", query}, {"per_page", std::to_string(max_results)}},

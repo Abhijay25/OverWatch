@@ -14,7 +14,11 @@ Scanner::Scanner(GitHubClient& client, SecretDetector& detector, const std::stri
 
 void Scanner::run(const std::string& search_query, int max_repos) {
     spdlog::info("Starting scan with query: {}", search_query);
-    spdlog::info("Maximum repositories to scan: {}", max_repos);
+    if (max_repos == 0) {
+        spdlog::info("Maximum repositories to scan: unlimited");
+    } else {
+        spdlog::info("Maximum repositories to scan: {}", max_repos);
+    }
 
     // Search for repositories
     auto repos = client_.searchRepositories(search_query, max_repos);

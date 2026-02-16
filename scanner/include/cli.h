@@ -18,6 +18,7 @@ enum class Command {
     DELETE_,  // DELETE is a reserved word in some systems
     ALL,
     RANDOM,
+    CONTINUOUS,
     FILTER,
     LIST,
     HELP,
@@ -59,6 +60,7 @@ private:
     int deleteCommand();
     int allCommand();
     int randomCommand();
+    int continuousCommand();
     int filterCommand();
     int listCommand();
 

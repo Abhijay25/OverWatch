@@ -14,6 +14,7 @@ Command CLI::stringToCommand(const std::string& cmd) {
     if (cmd == "delete") return Command::DELETE_;
     if (cmd == "all") return Command::ALL;
     if (cmd == "random") return Command::RANDOM;
+    if (cmd == "continuous" || cmd == "loop") return Command::CONTINUOUS;
     if (cmd == "filter") return Command::FILTER;
     if (cmd == "list") return Command::LIST;
     if (cmd == "help" || cmd == "--help" || cmd == "-h") return Command::HELP;
@@ -67,6 +68,9 @@ int CLI::execute() {
 
         case Command::RANDOM:
             return randomCommand();
+
+        case Command::CONTINUOUS:
+            return continuousCommand();
 
         case Command::FILTER:
             return filterCommand();
@@ -196,6 +200,47 @@ int CLI::randomCommand() {
     }
 }
 
+int CLI::continuousCommand() {
+    QueryBank bank;
+    bank.load("data/query_bank.yaml");
+
+    if (bank.getAllQueries().empty()) {
+        spdlog::error("Query bank is empty - cannot run continuous mode");
+        return 1;
+    }
+
+    spdlog::info("Starting continuous random scanning mode");
+    spdlog::info("Press Ctrl+C to stop");
+    spdlog::info("Query bank has {} queries loaded", bank.getAllQueries().size());
+    spdlog::info("");
+
+    int scan_count = 0;
+    while (true) {
+        try {
+            // Pick a random query
+            Query query = bank.getRandomQuery();
+            scan_count++;
+
+            spdlog::info("=== Scan #{} ===", scan_count);
+            spdlog::info("Randomly selected: {}", query.name);
+            spdlog::info("");
+
+            // Run the scan
+            runScan(query);
+
+            spdlog::info("");
+            spdlog::info("Completed scan #{}. Starting next scan...", scan_count);
+            spdlog::info("");
+
+        } catch (const std::exception& e) {
+            spdlog::error("Error during scan: {}", e.what());
+            spdlog::info("Continuing to next scan...");
+        }
+    }
+
+    return 0;
+}
+
 int CLI::filterCommand() {
     if (!options_.count("tag")) {
         spdlog::error("No tag provided");
@@ -311,17 +356,19 @@ void CLI::showHelp() {
     std::cout << "  delete <id>              Delete query from bank\n";
     std::cout << "  list                     List all queries in bank\n";
     std::cout << "  all                      Run all queries from bank\n";
-    std::cout << "  random                   Run a random query from bank\n";
+    std::cout << "  random                   Run a random query from bank (once)\n";
+    std::cout << "  continuous               Run random queries forever (Ctrl+C to stop)\n";
     std::cout << "  filter --tag <tag>       Run queries with specific tag\n";
     std::cout << "  help                     Show this help message\n\n";
     std::cout << "EXAMPLES:\n";
     std::cout << "  overwatch run \"language:Python stars:<5\"\n";
     std::cout << "  overwatch run \"language:Python stars:<5\" --max-repos 10\n";
-    std::cout << "  overwatch add --name \"Low Star Python\" --query \"language:Python stars:<5\" --tag python --max-repos 5\n";
+    std::cout << "  overwatch add --name \"Low Star Python\" --query \"language:Python stars:<5\" --tag python\n";
     std::cout << "  overwatch delete 3\n";
     std::cout << "  overwatch list\n";
     std::cout << "  overwatch all\n";
     std::cout << "  overwatch random\n";
+    std::cout << "  overwatch continuous     # Runs forever until Ctrl+C\n";
     std::cout << "  overwatch filter --tag python\n\n";
 }
 
