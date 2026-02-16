@@ -363,6 +363,7 @@ scanner/CMakeFiles/overwatch.dir/src/cli.cpp.o: /home/abhijay/repos/OverWatch/sc
   /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/bits/unique_lock.h \
   /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/bits/unique_ptr.h \
   /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/bits/unordered_map.h \
+  /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/bits/unordered_set.h \
   /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/bits/uses_allocator.h \
   /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/bits/uses_allocator_args.h \
   /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/bits/utility.h \
@@ -453,6 +454,7 @@ scanner/CMakeFiles/overwatch.dir/src/cli.cpp.o: /home/abhijay/repos/OverWatch/sc
   /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/type_traits \
   /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/typeinfo \
   /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/unordered_map \
+  /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/unordered_set \
   /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/utility \
   /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/valarray \
   /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/vector \
@@ -3751,6 +3753,10 @@ scanner/CMakeFiles/overwatch.dir/src/secret_detector.cpp.o:
 
 /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/bits/unordered_map.h:
 
+/nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/bits/hashtable_policy.h:
+
+/nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/bits/unordered_set.h:
+
 /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/bits/valarray_array.tcc:
 
 /nix/store/xmm2bwanp803sih7883bfadwf1nbmfxh-libcpr-1.14.1-dev/include/cpr/curlmultiholder.h:
@@ -3861,6 +3867,12 @@ scanner/CMakeFiles/overwatch.dir/src/secret_detector.cpp.o:
 
 /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/unordered_map:
 
+/nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/unordered_set:
+
+/nix/store/ri9paa3mri4kqakljak8ldvbcp7lpmif-zlib-1.3.1/lib/libz.so.1:
+
+/nix/store/rwalsamz4246k8f1zzxa54qx7w3fbzdg-glibc-2.42-47-dev/include/bits/time.h:
+
 /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/valarray:
 
 /nix/store/06sq3m77i1z73x640qskhp2pqjlilwkd-fmt-12.1.0-dev/include/fmt/format.h:
@@ -3930,12 +3942,6 @@ scanner/CMakeFiles/overwatch.dir/src/secret_detector.cpp.o:
 /nix/store/rwalsamz4246k8f1zzxa54qx7w3fbzdg-glibc-2.42-47-dev/include/bits/stdint-least.h:
 
 /nix/store/rwalsamz4246k8f1zzxa54qx7w3fbzdg-glibc-2.42-47-dev/include/bits/stdint-uintn.h:
-
-/nix/store/ri9paa3mri4kqakljak8ldvbcp7lpmif-zlib-1.3.1/lib/libz.so.1:
-
-/nix/store/rwalsamz4246k8f1zzxa54qx7w3fbzdg-glibc-2.42-47-dev/include/bits/time.h:
-
-/nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/unordered_set:
 
 /nix/store/6zpgsxs888i5ifqkj4bbb1czf2my655n-nlohmann_json-3.12.0/include/nlohmann/detail/string_escape.hpp:
 
@@ -4020,10 +4026,6 @@ scanner/CMakeFiles/overwatch.dir/src/secret_detector.cpp.o:
 /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/mutex:
 
 /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/bits/stl_queue.h:
-
-/nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/bits/hashtable_policy.h:
-
-/nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/bits/unordered_set.h:
 
 /nix/store/mjf8jlq9grydcdvyw6hb063x5c34g5gf-gcc-15.2.0/include/c++/15.2.0/fstream:
 

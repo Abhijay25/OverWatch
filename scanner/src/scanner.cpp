@@ -5,11 +5,14 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <thread>
 
 namespace overwatch {
 
 Scanner::Scanner(GitHubClient& client, SecretDetector& detector, const std::string& output_file)
-    : client_(client), detector_(detector), output_file_(output_file) {
+    : client_(client), detector_(detector), output_file_(output_file),
+      scanned_repos_file_("data/scanned_repos.txt") {
+    loadScannedRepos();
 }
 
 void Scanner::run(const std::string& search_query, int max_repos) {
@@ -32,13 +35,35 @@ void Scanner::run(const std::string& search_query, int max_repos) {
 
     // Scan each repository
     int scanned = 0;
+    int skipped = 0;
     for (const auto& repo : repos) {
+        // Skip archived repositories
+        if (repo.archived) {
+            spdlog::debug("Skipping archived repo: {}/{}", repo.owner, repo.name);
+            skipped++;
+            continue;
+        }
+
+        // Skip already scanned repositories
+        if (isAlreadyScanned(repo.owner, repo.name)) {
+            spdlog::debug("Skipping already scanned repo: {}/{}", repo.owner, repo.name);
+            skipped++;
+            continue;
+        }
+
         spdlog::info("Scanning {}/{} ...", repo.owner, repo.name);
         scanRepository(repo);
+        saveScannedRepo(repo.owner, repo.name);
         scanned++;
+
+        // Add small delay to avoid hitting rate limits (0.5 seconds)
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
-    spdlog::info("Scan complete! Scanned {} repositories", scanned);
+    if (skipped > 0) {
+        spdlog::info("Skipped {} repositories (archived or already scanned)", skipped);
+    }
+    spdlog::info("Scan complete! Scanned {} new repositories", scanned);
 }
 
 void Scanner::scanRepository(const Repository& repo) {
@@ -103,6 +128,40 @@ void Scanner::writeFinding(const std::string& owner, const std::string& repo,
 
     spdlog::info("Wrote finding: {}/{}/{} line {} - {}",
                 owner, repo, file, match.line_number, match.pattern_name);
+}
+
+void Scanner::loadScannedRepos() {
+    std::ifstream infile(scanned_repos_file_);
+    if (!infile) {
+        spdlog::debug("No scanned repos file found, starting fresh");
+        return;
+    }
+
+    std::string line;
+    while (std::getline(infile, line)) {
+        if (!line.empty()) {
+            scanned_repos_.insert(line);
+        }
+    }
+    infile.close();
+    spdlog::info("Loaded {} previously scanned repositories", scanned_repos_.size());
+}
+
+void Scanner::saveScannedRepo(const std::string& owner, const std::string& repo) {
+    std::string repo_id = owner + "/" + repo;
+    scanned_repos_.insert(repo_id);
+
+    // Append to file
+    std::ofstream outfile(scanned_repos_file_, std::ios::app);
+    if (outfile) {
+        outfile << repo_id << "\n";
+        outfile.close();
+    }
+}
+
+bool Scanner::isAlreadyScanned(const std::string& owner, const std::string& repo) {
+    std::string repo_id = owner + "/" + repo;
+    return scanned_repos_.find(repo_id) != scanned_repos_.end();
 }
 
 } 

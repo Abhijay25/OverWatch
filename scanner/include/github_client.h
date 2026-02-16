@@ -15,6 +15,7 @@ struct Repository {
     std::string url;
     int stars;
     std::string language;
+    bool archived;
 };
 
 /**

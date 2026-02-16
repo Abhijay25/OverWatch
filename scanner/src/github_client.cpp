@@ -26,7 +26,7 @@ bool GitHubClient::validateToken() {
 
     // Build headers
     cpr::Header headers = {{"User-Agent", "OverWatch-Scanner"}};
-    headers["Authorization"] = "Bearer " + token_;
+    headers["Authorization"] = "token " + token_;
 
     // Try to access user endpoint (requires authentication)
     cpr::Response r = cpr::Get(
@@ -62,7 +62,7 @@ nlohmann::json GitHubClient::getRateLimit() {
     // Build headers
     cpr::Header headers = {{"User-Agent", "OverWatch-Scanner"}};
     if (!token_.empty()) {
-        headers["Authorization"] = "Bearer " + token_;
+        headers["Authorization"] = "token " + token_;
     }
 
     // Make request
@@ -90,7 +90,7 @@ std::vector<Repository> GitHubClient::searchRepositories(const std::string& quer
     // Build headers
     cpr::Header headers = {{"User-Agent", "OverWatch-Scanner"}};
     if (!token_.empty()) {
-        headers["Authorization"] = "Bearer " + token_;
+        headers["Authorization"] = "token " + token_;
     }
 
     // Handle unlimited mode (max_results = 0)
@@ -133,6 +133,7 @@ std::vector<Repository> GitHubClient::searchRepositories(const std::string& quer
                     repo.url = item["html_url"];
                     repo.stars = item["stargazers_count"];
                     repo.language = item["language"].is_null() ? "" : item["language"];
+                    repo.archived = item.contains("archived") && !item["archived"].is_null() ? item["archived"].get<bool>() : false;
 
                     repositories.push_back(repo);
                     total_fetched++;
@@ -182,6 +183,7 @@ std::vector<Repository> GitHubClient::searchRepositories(const std::string& quer
             repo.url = item["html_url"];
             repo.stars = item["stargazers_count"];
             repo.language = item["language"].is_null() ? "" : item["language"];
+            repo.archived = item.contains("archived") && !item["archived"].is_null() ? item["archived"].get<bool>() : false;
 
             repositories.push_back(repo);
         }
@@ -198,7 +200,7 @@ std::string GitHubClient::getFileContent(const std::string& owner, const std::st
     // Build headers
     cpr::Header headers = {{"User-Agent", "OverWatch-Scanner"}};
     if (!token_.empty()) {
-        headers["Authorization"] = "Bearer " + token_;
+        headers["Authorization"] = "token " + token_;
     }
 
     std::string url = base_url_ + "/repos/" + owner + "/" + repo + "/contents/" + path;

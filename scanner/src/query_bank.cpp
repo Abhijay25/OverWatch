@@ -84,6 +84,15 @@ void QueryBank::save(const std::string& yaml_path) {
 }
 
 void QueryBank::addQuery(const Query& query) {
+    // Check for duplicate query string
+    for (const auto& existing : queries_) {
+        if (existing.query == query.query) {
+            spdlog::warn("Duplicate query detected: '{}' (already exists as ID: {})", query.query, existing.id);
+            spdlog::warn("Skipping addition of duplicate query");
+            return;
+        }
+    }
+
     queries_.push_back(query);
     spdlog::info("Added query: {} (ID: {})", query.name, query.id);
 }

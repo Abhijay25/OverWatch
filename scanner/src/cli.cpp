@@ -209,6 +209,42 @@ int CLI::continuousCommand() {
         return 1;
     }
 
+    // Get GitHub token
+    const char* token_env = std::getenv("GITHUB_TOKEN");
+    std::string token = token_env ? token_env : "";
+
+    if (token.empty()) {
+        spdlog::warn("No GITHUB_TOKEN found - using unauthenticated API (lower rate limits)");
+        spdlog::warn("Set your token: export GITHUB_TOKEN=\"ghp_...\"");
+    }
+
+    // Validate token ONCE at startup (not on every scan)
+    if (!token.empty()) {
+        GitHubClient temp_client(token);
+        if (!temp_client.validateToken()) {
+            spdlog::error("Failed to validate GitHub token. Please check:");
+            spdlog::error("  1. Token is not expired: https://github.com/settings/tokens");
+            spdlog::error("  2. Token has 'public_repo' scope");
+            spdlog::error("  3. Token format is correct (starts with ghp_)");
+            return 1;
+        }
+
+        // Check rate limit once
+        auto rate_data = temp_client.getRateLimit();
+        int remaining = rate_data["rate"]["remaining"];
+        int limit = rate_data["rate"]["limit"];
+        spdlog::info("API rate limit: {}/{} requests remaining", remaining, limit);
+
+        if (remaining < 100) {
+            spdlog::warn("Low on API quota! Only {} requests remaining", remaining);
+            spdlog::warn("Consider waiting for rate limit reset");
+        }
+    }
+
+    // Load patterns once for all scans
+    SecretDetector detector;
+    detector.loadPatterns("config/patterns.yaml");
+
     spdlog::info("Starting continuous random scanning mode");
     spdlog::info("Press Ctrl+C to stop");
     spdlog::info("Query bank has {} queries loaded", bank.getAllQueries().size());
@@ -225,8 +261,8 @@ int CLI::continuousCommand() {
             spdlog::info("Randomly selected: {}", query.name);
             spdlog::info("");
 
-            // Run the scan
-            runScan(query);
+            // Run the scan (reusing detector)
+            runScanNoValidate(query, token, detector);
 
             spdlog::info("");
             spdlog::info("Completed scan #{}. Starting next scan...", scan_count);
@@ -338,6 +374,19 @@ void CLI::runScan(const Query& query) {
     // Create scanner components
     SecretDetector detector;
     detector.loadPatterns("config/patterns.yaml");
+    Scanner scanner(client, detector, "data/findings.jsonl");
+
+    // Run scan
+    spdlog::info("Starting scan: {}", query.name.empty() ? query.query : query.name);
+    scanner.run(query.query, query.max_repos);
+    spdlog::info("Scan complete!");
+}
+
+void CLI::runScanNoValidate(const Query& query, const std::string& token, SecretDetector& detector) {
+    // Create GitHub client (without validation)
+    GitHubClient client(token);
+
+    // Use pre-loaded detector (patterns already compiled)
     Scanner scanner(client, detector, "data/findings.jsonl");
 
     // Run scan

@@ -67,6 +67,7 @@ private:
     // Helpers
     void showHelp();
     void runScan(const Query& query);
+    void runScanNoValidate(const Query& query, const std::string& token, SecretDetector& detector);
 };
 
 } // namespace overwatch
